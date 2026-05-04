@@ -1,0 +1,6 @@
+apiVersion: v2
+name: classifier
+description: EU AI Act Risk Classifier — bundle of all platform services.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

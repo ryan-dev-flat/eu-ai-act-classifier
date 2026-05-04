@@ -1,0 +1,82 @@
+{
+  "version": "v1",
+  "obligations": [
+    {
+      "id": "art9_risk_management",
+      "article": "Article 9",
+      "annex": null,
+      "title": "Risk management system",
+      "summary": "Establish, implement, document and maintain a risk management system across the AI system lifecycle.",
+      "appliesTo": ["provider"],
+      "riskTiers": ["high_risk"],
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null
+    },
+    {
+      "id": "art10_data_governance",
+      "article": "Article 10",
+      "annex": null,
+      "title": "Data and data governance",
+      "summary": "Training, validation and testing data sets must meet quality criteria including relevance, representativeness, and bias examination.",
+      "appliesTo": ["provider"],
+      "riskTiers": ["high_risk"],
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null
+    },
+    {
+      "id": "art13_transparency_to_deployers",
+      "article": "Article 13",
+      "annex": null,
+      "title": "Transparency and provision of information to deployers",
+      "summary": "Provide deployers with instructions for use containing information enabling them to interpret and use the system.",
+      "appliesTo": ["provider"],
+      "riskTiers": ["high_risk"],
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null
+    },
+    {
+      "id": "art26_deployer_obligations",
+      "article": "Article 26",
+      "annex": null,
+      "title": "Obligations of deployers of high-risk AI systems",
+      "summary": "Use the system in accordance with instructions, ensure human oversight, monitor operation, retain logs.",
+      "appliesTo": ["deployer"],
+      "riskTiers": ["high_risk"],
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null
+    },
+    {
+      "id": "art50_transparency",
+      "article": "Article 50",
+      "annex": null,
+      "title": "Transparency obligations for certain AI systems",
+      "summary": "Inform users they are interacting with an AI system; mark synthetic content; disclose emotion recognition or biometric categorisation.",
+      "appliesTo": ["provider", "deployer"],
+      "riskTiers": ["limited_risk"],
+      "effectiveFrom": "2026-08-02",
+      "effectiveTo": null
+    },
+    {
+      "id": "art53_gpai_provider_obligations",
+      "article": "Article 53",
+      "annex": null,
+      "title": "Obligations for providers of general-purpose AI models",
+      "summary": "Maintain technical documentation, provide information to downstream providers, comply with copyright law, publish a training-data summary.",
+      "appliesTo": ["gpai_provider"],
+      "riskTiers": ["gpai", "gpai_systemic_risk"],
+      "effectiveFrom": "2025-08-02",
+      "effectiveTo": null
+    },
+    {
+      "id": "art55_gpai_systemic_risk",
+      "article": "Article 55",
+      "annex": null,
+      "title": "Obligations for providers of GPAI models with systemic risk",
+      "summary": "Model evaluation, systemic-risk assessment and mitigation, serious-incident reporting, cybersecurity protections.",
+      "appliesTo": ["gpai_provider"],
+      "riskTiers": ["gpai_systemic_risk"],
+      "effectiveFrom": "2025-08-02",
+      "effectiveTo": null
+    }
+  ]
+}

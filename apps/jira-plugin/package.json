@@ -1,0 +1,23 @@
+{
+  "name": "@eu-ai-act/jira-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Atlassian Forge app embedding the EU AI Act Risk Classifier intake into Jira.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "deploy": "forge deploy",
+    "install:jira": "forge install",
+    "lint": "echo 'lint: jira-plugin'",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@forge/api": "^4.2.0",
+    "@forge/bridge": "^4.4.0",
+    "@forge/react": "^10.10.0",
+    "@forge/resolver": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "templateId": "standard-deployer-v1",
+  "domain": "general",
+  "name": "Annex III standard-deployer screener",
+  "version": "v1",
+  "description": "General-purpose Annex III screening questionnaire covering all eight high-risk categories plus Article 6(3) derogation criteria. Domain-specific templates (hr-tech, fintech) extend a subset of these questions.",
+  "sections": [
+    {
+      "id": "annex_iii_1_biometrics",
+      "title": "Annex III(1) — Biometrics",
+      "questions": [
+        { "id": "performs_remote_biometric_identification", "label": "Does the system perform remote biometric identification of natural persons?", "type": "boolean", "required": true },
+        { "id": "performs_only_biometric_verification", "label": "Is its sole purpose biometric verification (1:1 match) of a person's identity?", "type": "boolean", "required": false },
+        { "id": "performs_biometric_categorisation_sensitive_attributes", "label": "Does the system categorise natural persons by sensitive or protected attributes (race, opinions, sexual orientation, etc.)?", "type": "boolean", "required": true },
+        { "id": "performs_emotion_recognition", "label": "Does the system infer emotions or affective states of natural persons?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "annex_iii_2_critical_infrastructure",
+      "title": "Annex III(2) — Critical infrastructure",
+      "questions": [
+        { "id": "is_safety_component_of_critical_infrastructure", "label": "Is the system a safety component in the management or operation of critical infrastructure?", "type": "boolean", "required": true },
+        { "id": "critical_infrastructure_domain", "label": "Which critical infrastructure domain?", "type": "single_select", "options": ["road_traffic","water_supply","gas_supply","heating_supply","electricity_supply","critical_digital_infrastructure","none"], "required": false }
+      ]
+    },
+    {
+      "id": "annex_iii_3_education",
+      "title": "Annex III(3) — Education and vocational training",
+      "questions": [
+        { "id": "determines_education_access_or_admission", "label": "Does the system determine access, admission or assignment to education or vocational training?", "type": "boolean", "required": true },
+        { "id": "evaluates_learning_outcomes", "label": "Does the system evaluate learning outcomes (including to steer the learning process)?", "type": "boolean", "required": true },
+        { "id": "assesses_education_level", "label": "Does the system assess the appropriate level of education a person should receive?", "type": "boolean", "required": true },
+        { "id": "monitors_test_taking_behaviour", "label": "Does the system monitor and detect prohibited behaviour during tests?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "annex_iii_4_employment",
+      "title": "Annex III(4) — Employment, workers management",
+      "questions": [
+        { "id": "used_for_recruitment_or_selection", "label": "Is the system used for recruitment or selection (advertising, filtering, evaluating candidates)?", "type": "boolean", "required": true },
+        { "id": "used_for_promotion_termination_or_task_allocation", "label": "Does it influence promotion, termination, or task allocation in work-related relationships?", "type": "boolean", "required": true },
+        { "id": "monitors_or_evaluates_worker_performance", "label": "Does it monitor and evaluate performance or behaviour of workers?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "annex_iii_5_essential_services",
+      "title": "Annex III(5) — Essential public/private services",
+      "questions": [
+        { "id": "determines_eligibility_for_public_benefits", "label": "Does the system determine eligibility for public assistance benefits, services, or healthcare?", "type": "boolean", "required": true },
+        { "id": "used_for_creditworthiness_or_credit_scoring", "label": "Is it used to evaluate creditworthiness or establish credit scores?", "type": "boolean", "required": true },
+        { "id": "detects_only_financial_fraud", "label": "Is its sole purpose detecting financial fraud (excluded from Annex III(5)(b))?", "type": "boolean", "required": false },
+        { "id": "used_for_life_or_health_insurance_pricing", "label": "Is it used for risk assessment or pricing of life or health insurance?", "type": "boolean", "required": true },
+        { "id": "dispatches_emergency_services", "label": "Does it dispatch or prioritise dispatch of emergency first-response services?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "annex_iii_6_law_enforcement",
+      "title": "Annex III(6) — Law enforcement",
+      "questions": [
+        { "id": "le_assess_victim_risk", "label": "Used to assess risk of a person becoming a victim of a criminal offence?", "type": "boolean", "required": true },
+        { "id": "le_polygraph_or_similar", "label": "Is it a polygraph or similar tool used by law enforcement?", "type": "boolean", "required": true },
+        { "id": "le_evaluate_evidence_reliability", "label": "Used to evaluate the reliability of evidence in a criminal investigation?", "type": "boolean", "required": true },
+        { "id": "le_assess_offending_risk", "label": "Used to assess offending or re-offending risk, or personality traits?", "type": "boolean", "required": true },
+        { "id": "le_profiling_in_criminal_proceedings", "label": "Used to profile natural persons during detection, investigation, or prosecution?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "annex_iii_7_migration",
+      "title": "Annex III(7) — Migration, asylum, border control",
+      "questions": [
+        { "id": "mig_polygraph_or_similar", "label": "Is it a polygraph or similar tool used in migration / border control?", "type": "boolean", "required": true },
+        { "id": "mig_risk_assessment_of_persons", "label": "Used to assess security, irregular-migration, or health risks of persons crossing borders?", "type": "boolean", "required": true },
+        { "id": "mig_examine_asylum_visa_applications", "label": "Used to examine asylum, visa, or residence permit applications and complaints?", "type": "boolean", "required": true },
+        { "id": "mig_detect_or_identify_persons", "label": "Used to detect or identify persons in migration / border-control contexts?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "annex_iii_8_justice_democracy",
+      "title": "Annex III(8) — Justice and democratic processes",
+      "questions": [
+        { "id": "assists_judicial_decision_making", "label": "Does the system assist a judicial authority (or ADR) in interpreting and applying the law?", "type": "boolean", "required": true },
+        { "id": "influences_election_or_voter_behaviour", "label": "Is it used to influence election or referendum outcomes or voting behaviour?", "type": "boolean", "required": true },
+        { "id": "voters_not_directly_exposed_to_output", "label": "Are voters NOT directly exposed to the system's output (campaign back-office only)?", "type": "boolean", "required": false }
+      ]
+    },
+    {
+      "id": "article_6_3_derogation",
+      "title": "Article 6(3) — Derogation criteria",
+      "rationale": "Even when an Annex III match exists, a system is not high-risk where it does not pose significant risk to health, safety, or fundamental rights. Profiling carve-out applies regardless.",
+      "questions": [
+        { "id": "performs_narrow_procedural_task", "label": "Does the system perform only a narrow procedural task?", "type": "boolean", "required": true },
+        { "id": "improves_result_of_prior_human_activity", "label": "Does it only improve the result of a previously completed human activity?", "type": "boolean", "required": true },
+        { "id": "detects_decision_patterns_with_human_review", "label": "Does it detect decision-making patterns or deviations from such patterns (and not replace human judgment)?", "type": "boolean", "required": true },
+        { "id": "subject_to_proper_human_review", "label": "If pattern-detection: is the system's output subject to proper human review before action?", "type": "boolean", "required": false },
+        { "id": "performs_preparatory_task_only", "label": "Does it perform only a preparatory task to a human assessment?", "type": "boolean", "required": true },
+        { "id": "performs_profiling_of_natural_persons", "label": "Does the system perform profiling of natural persons (carve-out — disables the derogation)?", "type": "boolean", "required": true }
+      ]
+    },
+    {
+      "id": "article_6_1_annex_i",
+      "title": "Article 6(1) — Annex I product safety",
+      "questions": [
+        { "id": "is_safety_component_under_annex_i", "label": "Is the AI system a safety component of (or itself) a product covered by Annex I harmonisation legislation?", "type": "boolean", "required": true },
+        { "id": "annex_i_legislation", "label": "Which Annex I instrument applies?", "type": "single_select", "options": ["machinery_directive_2006_42_or_reg_2023_1230","toy_safety_directive_2009_48","recreational_craft_directive_2013_53","lifts_directive_2014_33","atex_directive_2014_34","radio_equipment_directive_2014_53","pressure_equipment_directive_2014_68","cableway_installations_reg_2016_424","ppe_reg_2016_425","gas_appliances_reg_2016_426","medical_devices_reg_2017_745","in_vitro_diagnostics_reg_2017_746","civil_aviation_reg_2018_1139","motor_vehicles_reg_2018_858","marine_equipment_directive_2014_90","rail_interoperability_directive_2016_797","agricultural_forestry_vehicles_reg_167_2013","two_or_three_wheel_vehicles_reg_168_2013","none"], "required": false },
+        { "id": "requires_third_party_conformity_assessment", "label": "Does the underlying product require third-party conformity assessment under that legislation?", "type": "boolean", "required": false }
+      ]
+    }
+  ]
+}

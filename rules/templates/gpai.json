@@ -1,0 +1,34 @@
+{
+  "templateId": "gpai-v1",
+  "domain": "general",
+  "name": "General-Purpose AI model intake",
+  "version": "v1",
+  "questions": [
+    {
+      "id": "model_provider_role",
+      "label": "Are you the provider of the GPAI model, a downstream provider, or a deployer?",
+      "type": "single_select",
+      "options": ["provider", "downstream_provider", "deployer"],
+      "required": true
+    },
+    {
+      "id": "training_compute_flops",
+      "label": "Cumulative training compute (in FLOP).",
+      "type": "number",
+      "required": true,
+      "rationale": "Article 51 systemic-risk threshold (10^25 FLOP)."
+    },
+    {
+      "id": "open_source_release",
+      "label": "Is the model released under a free and open-source licence with weights and architecture publicly available?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "id": "code_of_practice_signatory",
+      "label": "Is the provider a signatory to the GPAI Code of Practice?",
+      "type": "boolean",
+      "required": true
+    }
+  ]
+}

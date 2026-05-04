@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "sandboxes": [
+    {
+      "memberState": "ES",
+      "name": "Spanish AI regulatory sandbox",
+      "operator": "AESIA",
+      "criteriaSummary": "First operational EU AI Act sandbox; focus on Annex III systems including HR and credit.",
+      "applicationUrl": "https://aesia.gob.es/sandbox"
+    },
+    {
+      "memberState": "FR",
+      "name": "CNIL bac à sable IA",
+      "operator": "CNIL",
+      "criteriaSummary": "GDPR-aligned innovation sandbox; recent cohorts include health and HR.",
+      "applicationUrl": "https://www.cnil.fr/fr/bac-sable"
+    }
+  ]
+}

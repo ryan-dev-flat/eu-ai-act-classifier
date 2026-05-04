@@ -1,0 +1,18 @@
+{{- range $name, $svc := .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "classifier.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: {{ $svc.port }}
+      name: http
+  selector:
+    app.kubernetes.io/component: {{ $name }}
+{{- end }}

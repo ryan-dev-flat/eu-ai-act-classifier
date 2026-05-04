@@ -1,0 +1,49 @@
+# Node
+node_modules
+.pnpm-store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist
+build
+.next
+.turbo
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+coverage
+.nyc_output
+
+# Terraform
+.terraform
+*.tfstate
+*.tfstate.backup
+*.tfvars
+!*.tfvars.example
+
+# Helm
+charts/*.tgz
+
+# Logs
+logs
+*.log
+
+# Markdown docs at repo root (PRDs, architecture notes, etc.) — keep README.md
+/*.md
+!/README.md

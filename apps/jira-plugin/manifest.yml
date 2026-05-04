@@ -1,0 +1,30 @@
+modules:
+  jira:issuePanel:
+    - key: eu-ai-act-issue-panel
+      resource: main
+      resolver:
+        function: resolver
+      title: EU AI Act Classification
+      icon: https://eu-ai-act.example.com/icon.png
+
+  function:
+    - key: resolver
+      handler: index.handler
+
+resources:
+  - key: main
+    path: src/frontend/index.tsx
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+  external:
+    fetch:
+      backend:
+        - https://api.eu-ai-act.example.com
+
+app:
+  id: ari:cloud:ecosystem::app/REPLACE-WITH-FORGE-APP-ID
+  runtime:
+    name: nodejs20.x

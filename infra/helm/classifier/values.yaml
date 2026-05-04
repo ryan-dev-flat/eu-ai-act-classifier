@@ -1,0 +1,53 @@
+image:
+  registry: ghcr.io/your-org/eu-ai-act
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: alb
+  host: classifier.example.com
+
+services:
+  classification-engine:
+    replicas: 2
+    port: 4001
+    resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+  workflow:
+    replicas: 2
+    port: 4002
+    resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+  regulatory-intelligence:
+    replicas: 1
+    port: 4003
+    resources: { requests: { cpu: 50m,  memory: 128Mi }, limits: { cpu: 250m, memory: 256Mi } }
+  timeline:
+    replicas: 1
+    port: 4004
+    resources: { requests: { cpu: 50m,  memory: 128Mi }, limits: { cpu: 250m, memory: 256Mi } }
+  audit-log:
+    replicas: 2
+    port: 4005
+    resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+  notification:
+    replicas: 1
+    port: 4006
+    resources: { requests: { cpu: 50m,  memory: 128Mi }, limits: { cpu: 250m, memory: 256Mi } }
+  tenant-identity:
+    replicas: 2
+    port: 4007
+    resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+  export:
+    replicas: 1
+    port: 4008
+    resources: { requests: { cpu: 200m, memory: 512Mi }, limits: { cpu: 1000m, memory: 1Gi } }
+  web:
+    replicas: 2
+    port: 3000
+    resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+
+env:
+  NODE_ENV: production
+  LOG_LEVEL: info
+
+externalSecretsName: classifier-platform

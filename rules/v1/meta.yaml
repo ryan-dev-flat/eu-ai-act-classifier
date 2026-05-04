@@ -1,0 +1,38 @@
+version: v1
+effective_from: 2026-01-01
+deprecated_from: null
+description: >
+  Initial MVP rule set covering the EU AI Act standard-deployer pathway and
+  GPAI classification. Aligned with obligations effective 2 February 2025
+  (prohibited practices) and 2 August 2026 milestones.
+authors:
+  - content-team
+review:
+  required_approvers: 2
+sources:
+  - https://eur-lex.europa.eu/eli/reg/2024/1689
+coverage:
+  prohibited_practices: Article 5 (subset; extend during content phase)
+  high_risk:
+    annex_i_safety_components: Article 6(1)
+    annex_iii_categories:
+      - "1. Biometrics"
+      - "2. Critical infrastructure"
+      - "3. Education and vocational training"
+      - "4. Employment, workers management and access to self-employment"
+      - "5. Access to essential private and public services"
+      - "6. Law enforcement"
+      - "7. Migration, asylum and border control"
+      - "8. Administration of justice and democratic processes"
+    derogation: Article 6(3) with profiling carve-out
+  limited_risk: Article 50 transparency
+  gpai: Articles 51–55 (10^25 FLOP systemic-risk threshold)
+changelog:
+  - version: v1
+    date: 2026-01-01
+    notes: >
+      Initial release. Annex III(1)-(8) modular rules, Article 6(3) derogation
+      with profiling carve-out, Annex I safety-component path, GPAI pathway,
+      and aggregate riskTier/obligations/rationale/confidence/openQuestions
+      decision in shared/main.rego. 27 unit tests covering each category, the
+      derogation, prohibited practices, and the aggregate decision.

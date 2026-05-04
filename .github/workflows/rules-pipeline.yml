@@ -1,0 +1,52 @@
+name: Rules content pipeline
+
+on:
+  pull_request:
+    paths:
+      - "eu-ai-act-classifier/rules/**"
+      - "eu-ai-act-classifier/content/**"
+  push:
+    branches: [main]
+    paths:
+      - "eu-ai-act-classifier/rules/**"
+      - "eu-ai-act-classifier/content/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/v0.68.0/opa_linux_amd64_static
+          chmod +x opa && sudo mv opa /usr/local/bin/opa
+
+      - name: Lint Rego rule sets
+        working-directory: eu-ai-act-classifier
+        run: opa fmt --diff rules/
+
+      - name: Compile rule sets
+        working-directory: eu-ai-act-classifier
+        run: opa eval --bundle rules/v1 'data.eu_ai_act.classification' --format pretty > /dev/null
+
+      - name: Validate JSON content seeds
+        working-directory: eu-ai-act-classifier
+        run: |
+          for f in content/*.json rules/templates/*.json; do
+            echo "Validating $f"
+            python -m json.tool "$f" > /dev/null
+          done
+
+  approve:
+    needs: validate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Two-person approval reminder
+        run: |
+          echo "Per architecture §7.2, rule-set changes require two approvers"
+          echo "(content team + engineering) before promotion to staging."

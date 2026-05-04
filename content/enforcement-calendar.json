@@ -1,0 +1,35 @@
+{
+  "version": "v1",
+  "milestones": [
+    {
+      "id": "prohibited_practices_in_force",
+      "date": "2025-02-02",
+      "scope": "All actors",
+      "description": "Prohibitions on Article 5 practices apply."
+    },
+    {
+      "id": "gpai_obligations_in_force",
+      "date": "2025-08-02",
+      "scope": "GPAI providers",
+      "description": "Articles 53 and 55 obligations begin to apply."
+    },
+    {
+      "id": "high_risk_obligations_in_force",
+      "date": "2026-08-02",
+      "scope": "Providers and deployers of high-risk systems (Annex III)",
+      "description": "Core high-risk obligations (Articles 9, 10, 13, 26 etc.) become applicable."
+    },
+    {
+      "id": "annex_i_high_risk_in_force",
+      "date": "2027-08-02",
+      "scope": "Annex I (product-safety) high-risk systems",
+      "description": "Extended transition for products covered by existing Union harmonisation legislation."
+    },
+    {
+      "id": "legacy_systems_window",
+      "date": "2030-08-02",
+      "scope": "Legacy public-sector systems placed on the market before 2 August 2026",
+      "description": "Compliance window for legacy systems already in operation."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: classifier
+  labels: {{- include "classifier.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api/classifications
+            pathType: Prefix
+            backend: { service: { name: classification-engine, port: { number: 80 } } }
+          - path: /api/workflows
+            pathType: Prefix
+            backend: { service: { name: workflow, port: { number: 80 } } }
+          - path: /api/regulations
+            pathType: Prefix
+            backend: { service: { name: regulatory-intelligence, port: { number: 80 } } }
+          - path: /api/timeline
+            pathType: Prefix
+            backend: { service: { name: timeline, port: { number: 80 } } }
+          - path: /api/audit
+            pathType: Prefix
+            backend: { service: { name: audit-log, port: { number: 80 } } }
+          - path: /api/tenant
+            pathType: Prefix
+            backend: { service: { name: tenant-identity, port: { number: 80 } } }
+          - path: /api/exports
+            pathType: Prefix
+            backend: { service: { name: export, port: { number: 80 } } }
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: web, port: { number: 80 } } }
+{{- end }}

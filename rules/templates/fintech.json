@@ -1,0 +1,34 @@
+{
+  "templateId": "fintech-v1",
+  "domain": "fintech",
+  "name": "Fintech intake (credit, insurance, fraud)",
+  "version": "v1",
+  "questions": [
+    {
+      "id": "used_for_creditworthiness_or_credit_scoring",
+      "label": "Is the system used to evaluate creditworthiness or establish credit scores of natural persons?",
+      "type": "boolean",
+      "required": true,
+      "rationale": "Annex III(5)(b) — access to and enjoyment of essential private services."
+    },
+    {
+      "id": "used_for_life_or_health_insurance_pricing",
+      "label": "Is the system used for risk assessment and pricing of life or health insurance?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "id": "used_in_critical_infrastructure",
+      "label": "Is the system a safety component of critical financial infrastructure (e.g. payments, clearing)?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "id": "deployment_geographies",
+      "label": "EU member states where the system is deployed.",
+      "type": "multi_select",
+      "options": ["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE"],
+      "required": true
+    }
+  ]
+}

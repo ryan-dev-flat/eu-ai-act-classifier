@@ -1,0 +1,42 @@
+{
+  "version": "v1",
+  "authorities": [
+    {
+      "memberState": "EU",
+      "systemDomain": "general",
+      "authorityName": "European AI Office (DG CNECT)",
+      "contactUrl": "https://digital-strategy.ec.europa.eu/en/policies/ai-office",
+      "notes": "Supervises GPAI obligations and coordinates national authorities."
+    },
+    {
+      "memberState": "DE",
+      "systemDomain": "general",
+      "authorityName": "Bundesnetzagentur (designated coordinator)",
+      "contactUrl": "https://www.bundesnetzagentur.de"
+    },
+    {
+      "memberState": "FR",
+      "systemDomain": "general",
+      "authorityName": "CNIL (designated)",
+      "contactUrl": "https://www.cnil.fr"
+    },
+    {
+      "memberState": "ES",
+      "systemDomain": "general",
+      "authorityName": "AESIA — Agencia Española de Supervisión de la Inteligencia Artificial",
+      "contactUrl": "https://aesia.gob.es"
+    },
+    {
+      "memberState": "IE",
+      "systemDomain": "general",
+      "authorityName": "Department of Enterprise, Trade and Employment (lead, transitional)",
+      "contactUrl": "https://enterprise.gov.ie"
+    },
+    {
+      "memberState": "NL",
+      "systemDomain": "general",
+      "authorityName": "Autoriteit Persoonsgegevens (coordinating)",
+      "contactUrl": "https://autoriteitpersoonsgegevens.nl"
+    }
+  ]
+}

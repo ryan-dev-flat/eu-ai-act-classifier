@@ -1,0 +1,11 @@
+{
+  "version": "v1",
+  "publishedAt": "2025-07-10",
+  "summary": "Voluntary Code of Practice for GPAI providers, prepared under Article 56.",
+  "sections": [
+    { "id": "transparency", "title": "Transparency and documentation" },
+    { "id": "copyright", "title": "Copyright compliance" },
+    { "id": "systemic_risk", "title": "Systemic-risk identification and mitigation (Article 55 signatories)" }
+  ],
+  "decisionTree": []
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@eu-ai-act/db",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo 'lint: db'",
+    "migrate": "node-pg-migrate up -m ../../db/migrations -d $DATABASE_URL",
+    "migrate:audit": "node-pg-migrate up -m ../../db/migrations-audit -d $AUDIT_DATABASE_URL",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@eu-ai-act/config": "workspace:*",
+    "@eu-ai-act/shared-types": "workspace:*",
+    "node-pg-migrate": "^7.6.1",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

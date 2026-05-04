@@ -1,0 +1,29 @@
+{
+  "name": "@eu-ai-act/tenant-identity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo 'lint: tenant-identity'",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@eu-ai-act/auth": "workspace:*",
+    "@eu-ai-act/config": "workspace:*",
+    "@eu-ai-act/db": "workspace:*",
+    "@eu-ai-act/shared-types": "workspace:*",
+    "fastify": "^5.0.0",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.2"
+  }
+}
