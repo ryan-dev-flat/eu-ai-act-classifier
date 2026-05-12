@@ -7,9 +7,28 @@ modules:
       title: EU AI Act Classification
       icon: https://eu-ai-act.example.com/icon.png
 
+  jira:customField:
+    - key: eu-ai-act-classification-id
+      name: EU AI Act Classification ID
+      description: Stores the backend classification ID linked to this Jira issue.
+      type: string
+      readOnly: true
+      view:
+        formatter:
+          expression: "value == null || value == '' ? 'Not classified' : value"
+          export: true
+
+  webtrigger:
+    - key: eu-ai-act-update-issue
+      function: updateIssue
+      response:
+        type: dynamic
+
   function:
     - key: resolver
       handler: index.handler
+    - key: updateIssue
+      handler: index.updateIssue
 
 resources:
   - key: main
@@ -17,14 +36,57 @@ resources:
 
 permissions:
   scopes:
+    - manage:jira-configuration
     - read:jira-work
     - write:jira-work
+    - storage:app
   external:
     fetch:
       backend:
-        - https://api.eu-ai-act.example.com
+        - remote: eu-ai-act-api
+        - remote: eu-ai-act-auth
+
+providers:
+  auth:
+    - key: eu-ai-act-backend
+      name: EU AI Act Classifier
+      type: oauth2
+      clientId: eu-ai-act-forge-client
+      scopes:
+        - classifications:read
+        - classifications:write
+        - workflows:read
+      remotes:
+        - eu-ai-act-api
+      bearerMethod: authorization-header
+      actions:
+        authorization:
+          remote: eu-ai-act-auth
+          path: /oauth/authorize
+        exchange:
+          remote: eu-ai-act-auth
+          path: /oauth/token
+        refreshToken:
+          remote: eu-ai-act-auth
+          path: /oauth/token
+        retrieveProfile:
+          remote: eu-ai-act-api
+          path: /v1/users/me
+          resolvers:
+            id: id
+            displayName: email
+
+remotes:
+  - key: eu-ai-act-api
+    baseUrl: https://api.eu-ai-act.example.com
+    operations:
+      - fetch
+  - key: eu-ai-act-auth
+    baseUrl: https://identity.eu-ai-act.example.com
+    operations:
+      - fetch
 
 app:
-  id: ari:cloud:ecosystem::app/REPLACE-WITH-FORGE-APP-ID
+  id: ari:cloud:ecosystem::app/7f8ff4bb-20e0-4608-91c5-359de57a0e2d
   runtime:
     name: nodejs20.x

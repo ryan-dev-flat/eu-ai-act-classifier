@@ -1,7 +1,7 @@
 'use client';
 
 import type { ClassificationResult, RiskTier, TriggeredCategory } from '@eu-ai-act/shared-types';
-import { useClassification } from '@/lib/hooks';
+import { useClassification, useCreateExport } from '@/lib/hooks';
 
 const TIER_STYLE: Record<RiskTier, { label: string; className: string }> = {
   prohibited: { label: 'Prohibited', className: 'bg-red-100 text-red-800 border-red-300' },
@@ -29,6 +29,7 @@ export default function ClassificationDetailPage({ params }: { params: { id: str
 }
 
 function ResultView({ result, id }: { result: ClassificationResult; id: string }) {
+  const createExport = useCreateExport();
   const tier = TIER_STYLE[result.riskTier] ?? {
     label: result.riskTier,
     className: 'bg-gray-100 text-gray-800 border-gray-300',
@@ -38,6 +39,25 @@ function ResultView({ result, id }: { result: ClassificationResult; id: string }
       <div>
         <h1 className="text-2xl font-semibold">Classification</h1>
         <p className="mt-1 font-mono text-xs text-gray-500">{id}</p>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <ExportButton
+          label="Export to PDF"
+          disabled={createExport.isPending}
+          onClick={() => createClassificationExport(id, 'pdf', createExport.mutateAsync)}
+        />
+        <ExportButton
+          label="Export to DOCX"
+          disabled={createExport.isPending}
+          onClick={() => createClassificationExport(id, 'docx', createExport.mutateAsync)}
+        />
+        <ExportButton
+          label="Export to Markdown"
+          disabled={createExport.isPending}
+          onClick={() => createClassificationExport(id, 'markdown', createExport.mutateAsync)}
+        />
+        {createExport.error && <span className="text-sm text-red-600">{createExport.error.message}</span>}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -92,6 +112,36 @@ function ResultView({ result, id }: { result: ClassificationResult; id: string }
         </Section>
       )}
     </div>
+  );
+}
+
+async function createClassificationExport(
+  classificationId: string,
+  format: 'pdf' | 'markdown' | 'docx',
+  mutate: ReturnType<typeof useCreateExport>['mutateAsync'],
+): Promise<void> {
+  const record = await mutate({ type: 'classification_memo', format, classificationId });
+  window.open(`/api/exports/${record.exportId}`, '_blank', 'noopener,noreferrer');
+}
+
+function ExportButton({
+  label,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="rounded bg-gray-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+    >
+      {label}
+    </button>
   );
 }
 

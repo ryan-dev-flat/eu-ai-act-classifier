@@ -44,6 +44,9 @@ charts/*.tgz
 logs
 *.log
 
+# Generated local export files
+generated
+
 # Markdown docs at repo root (PRDs, architecture notes, etc.) — keep README.md
 /*.md
 !/README.md

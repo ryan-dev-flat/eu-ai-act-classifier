@@ -19,6 +19,7 @@
     "@eu-ai-act/config": "workspace:*",
     "@eu-ai-act/db": "workspace:*",
     "@eu-ai-act/shared-types": "workspace:*",
+    "docx": "^9.6.1",
     "fastify": "^5.0.0",
     "pino": "^9.4.0",
     "puppeteer": "^23.4.0",

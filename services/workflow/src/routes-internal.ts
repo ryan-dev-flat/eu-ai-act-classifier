@@ -9,6 +9,7 @@ import {
 } from './repository.js';
 import { chainForResult } from './state-machine.js';
 import type { ClassificationResult } from '@eu-ai-act/shared-types';
+import type { NotificationClient } from './notification-client.js';
 
 const CreateBody = z.object({
   classificationId: z.string().uuid(),
@@ -28,6 +29,7 @@ const CreateBody = z.object({
 interface InternalRoutesDeps {
   repo?: RepositoryDeps;
   audit: AuditClient | null;
+  notification?: NotificationClient | null;
 }
 
 /**
@@ -55,27 +57,45 @@ export function registerInternalWorkflowRoutes(
       chain,
       deps.repo,
     );
+    const firstTask = instance.tasks[0];
+    const taskCreatedEvent = {
+      tenantId: req.authContext.tenantId,
+      userId: req.authContext.userId,
+      eventType: 'workflow.task_created' as const,
+      entityType: 'workflow',
+      entityId: instance.id,
+      payload: {
+        classificationId: instance.classificationId,
+        workflowId: instance.id,
+        chainDefinitionId: instance.chainDefinitionId,
+        taskId: firstTask?.id,
+        role: firstTask?.role,
+        assigneeId: firstTask?.assigneeId ?? null,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
     if (deps.audit) {
       try {
-        const firstTask = instance.tasks[0];
         await deps.audit.write(
-          {
-            tenantId: req.authContext.tenantId,
-            userId: req.authContext.userId,
-            eventType: 'workflow.task_created',
-            entityType: 'workflow',
-            entityId: instance.id,
-            payload: {
-              classificationId: instance.classificationId,
-              chainDefinitionId: instance.chainDefinitionId,
-              taskId: firstTask?.id,
-              role: firstTask?.role,
-            },
-          },
+          taskCreatedEvent,
           { token: req.authContext.token },
         );
       } catch (err) {
         req.log.error({ err }, 'workflow audit write failed');
+      }
+    }
+    if (deps.notification && firstTask) {
+      try {
+        const roles = req.headers['x-roles'];
+        await deps.notification.publish(taskCreatedEvent, {
+          token: req.authContext.token,
+          tenantId: req.authContext.tenantId,
+          userId: req.authContext.userId,
+          roles: Array.isArray(roles) ? roles[0] : roles,
+        });
+      } catch (err) {
+        req.log.error({ err }, 'workflow task-created notification failed');
       }
     }
     return reply.code(201).send(serialise(instance));

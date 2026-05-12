@@ -16,10 +16,15 @@ import {
   isTerminal,
 } from './state-machine.js';
 import { registerInternalWorkflowRoutes } from './routes-internal.js';
+import {
+  createHttpNotificationClient,
+  type NotificationClient,
+} from './notification-client.js';
 
 export interface RoutesDeps {
   audit?: AuditClient;
   repo?: RepositoryDeps;
+  notification?: NotificationClient;
 }
 
 function defaultAuditClient(): AuditClient | null {
@@ -27,12 +32,18 @@ function defaultAuditClient(): AuditClient | null {
   return url ? createHttpAuditClient(url) : null;
 }
 
+function defaultNotificationClient(): NotificationClient | null {
+  const url = process.env.NOTIFICATION_URL;
+  return url ? createHttpNotificationClient(url) : null;
+}
+
 export async function registerRoutes(
   app: FastifyInstance,
   deps: RoutesDeps = {},
 ): Promise<void> {
   const audit = deps.audit ?? defaultAuditClient();
-  registerInternalWorkflowRoutes(app, { audit, repo: deps.repo });
+  const notification = deps.notification ?? defaultNotificationClient();
+  registerInternalWorkflowRoutes(app, { audit, notification, repo: deps.repo });
 
   app.get<{ Params: { classification_id: string } }>(
     '/v1/workflows/:classification_id',
@@ -135,6 +146,40 @@ export async function registerRoutes(
           );
         } catch (err) {
           req.log.error({ err }, 'workflow audit write failed');
+        }
+      }
+      if (notification && nextRole) {
+        try {
+          const newTask = updated.tasks.find((t) => !t.completedAt && t.role === nextRole);
+          if (newTask) {
+            const roles = req.headers['x-roles'];
+            await notification.publish(
+              {
+                tenantId: req.authContext.tenantId,
+                userId: req.authContext.userId,
+                eventType: 'workflow.task_created',
+                entityType: 'workflow',
+                entityId: updated.id,
+                payload: {
+                  classificationId: updated.classificationId,
+                  workflowId: updated.id,
+                  chainDefinitionId: updated.chainDefinitionId,
+                  taskId: newTask.id,
+                  role: newTask.role,
+                  assigneeId: newTask.assigneeId,
+                },
+                timestamp: new Date().toISOString(),
+              },
+              {
+                token: req.authContext.token,
+                tenantId: req.authContext.tenantId,
+                userId: req.authContext.userId,
+                roles: Array.isArray(roles) ? roles[0] : roles,
+              },
+            );
+          }
+        } catch (err) {
+          req.log.error({ err }, 'workflow task-created notification failed');
         }
       }
       return reply.code(200).send(updated);
