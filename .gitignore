@@ -47,6 +47,9 @@ logs
 # Generated local export files
 generated
 
+# Local developer tools (downloaded binaries, etc.)
+.tools/
+
 # Markdown docs at repo root (PRDs, architecture notes, etc.) — keep README.md
 /*.md
 !/README.md
