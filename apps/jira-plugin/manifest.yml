@@ -1,3 +1,5 @@
+# Safe to commit: keep secrets out of this file.
+# Use `forge variables set <KEY> <VALUE> --encrypt --environment <env>` for sensitive values.
 modules:
   jira:issuePanel:
     - key: eu-ai-act-issue-panel
