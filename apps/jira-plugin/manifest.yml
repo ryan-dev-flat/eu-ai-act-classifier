@@ -6,6 +6,7 @@ modules:
       resource: main
       resolver:
         function: resolver
+      render: native
       title: EU AI Act Classification
       icon: https://eu-ai-act.example.com/icon.png
 
@@ -91,4 +92,4 @@ remotes:
 app:
   id: ari:cloud:ecosystem::app/7f8ff4bb-20e0-4608-91c5-359de57a0e2d
   runtime:
-    name: nodejs20.x
+    name: nodejs24.x

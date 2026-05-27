@@ -1,5 +1,6 @@
 import Resolver from '@forge/resolver';
-import api, { route, storage } from '@forge/api';
+import api, { route } from '@forge/api';
+import { kvs } from '@forge/kvs';
 import { createHash } from 'node:crypto';
 import type {
   ClassificationResult,
@@ -50,12 +51,13 @@ resolver.define('getClassificationForIssue', async ({ payload, context }) => {
   try {
     return await loadIssueSummary(issue, context, tenantId, mapping.classificationId);
   } catch (err) {
-    return {
+    const summary: ClassificationSummary = {
       ...emptySummary(issue, tenantId),
       classificationId: mapping.classificationId,
       status: 'error',
       error: err instanceof Error ? err.message : String(err),
-    } satisfies ClassificationSummary;
+    };
+    return summary;
   }
 });
 
@@ -102,7 +104,7 @@ resolver.define('startClassification', async ({ payload, context }) => {
 resolver.define('setTenantForSite', async ({ payload, context }) => {
   const body = payload as { tenantId: string };
   const cloudId = cloudIdFromContext(context);
-  await storage.set(tenantKey(cloudId), { tenantId: body.tenantId, updatedAt: new Date().toISOString() });
+  await kvs.set(tenantKey(cloudId), { tenantId: body.tenantId, updatedAt: new Date().toISOString() });
   return { tenantId: body.tenantId };
 });
 
@@ -250,7 +252,7 @@ function serviceUrl(envName: 'CLASSIFICATION_ENGINE_URL' | 'WORKFLOW_URL', path:
 
 async function getTenantId(context: unknown): Promise<string> {
   const cloudId = cloudIdFromContext(context);
-  const stored = (await storage.get(tenantKey(cloudId))) as { tenantId?: string } | undefined;
+  const stored = (await kvs.get(tenantKey(cloudId))) as { tenantId?: string } | undefined;
   return stored?.tenantId ?? process.env.EU_AI_ACT_DEFAULT_TENANT_ID ?? stableUuid(`tenant:${cloudId}`);
 }
 
@@ -266,8 +268,8 @@ async function storeIssueMapping(
     classificationId,
     updatedAt: new Date().toISOString(),
   };
-  await storage.set(mappingKey(issue.issueId), mapping);
-  await storage.set(classificationMappingKey(classificationId), mapping);
+  await kvs.set(mappingKey(issue.issueId), mapping);
+  await kvs.set(classificationMappingKey(classificationId), mapping);
   return mapping;
 }
 
@@ -286,7 +288,7 @@ async function syncClassificationCustomField(issueIdOrKey: string, classificatio
 }
 
 async function getClassificationCustomFieldId(): Promise<string> {
-  const cached = (await storage.get(classificationFieldStorageKey())) as { fieldId?: string } | undefined;
+  const cached = (await kvs.get(classificationFieldStorageKey())) as { fieldId?: string } | undefined;
   if (cached?.fieldId) return cached.fieldId;
 
   const response = await api.asApp().requestJira(route`/rest/api/3/field`, { headers: { Accept: 'application/json' } });
@@ -295,7 +297,7 @@ async function getClassificationCustomFieldId(): Promise<string> {
   const field = fields.find(isClassificationCustomField);
   if (!field) throw new Error(`Could not find Jira custom field ${CLASSIFICATION_FIELD_NAME}. Redeploy and reinstall the Forge app.`);
 
-  await storage.set(classificationFieldStorageKey(), { fieldId: field.id, updatedAt: new Date().toISOString() });
+  await kvs.set(classificationFieldStorageKey(), { fieldId: field.id, updatedAt: new Date().toISOString() });
   return field.id;
 }
 
@@ -414,11 +416,11 @@ function stringOrUndefined(value: unknown): string | undefined {
 }
 
 async function getIssueMapping(issueId: string): Promise<IssueClassificationMapping | undefined> {
-  return (await storage.get(mappingKey(issueId))) as IssueClassificationMapping | undefined;
+  return (await kvs.get(mappingKey(issueId))) as IssueClassificationMapping | undefined;
 }
 
 async function getIssueMappingForClassification(classificationId: string): Promise<IssueClassificationMapping | undefined> {
-  return (await storage.get(classificationMappingKey(classificationId))) as IssueClassificationMapping | undefined;
+  return (await kvs.get(classificationMappingKey(classificationId))) as IssueClassificationMapping | undefined;
 }
 
 function mappingKey(issueId: string): string {
