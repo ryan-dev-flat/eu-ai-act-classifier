@@ -2,7 +2,13 @@
  * Entry point — builds the gateway and starts the HTTP server.
  * All app-building logic lives in ./app.ts so that tests can import
  * buildGateway() without triggering process.exit or network I/O.
+ *
+ * Telemetry MUST be bootstrapped before the Fastify instance is created so
+ * that the global TracerProvider is registered in time for the first request.
  */
+import { startTelemetry } from './telemetry.js';
+startTelemetry(); // synchronous — safe to call before other imports resolve
+
 import { buildGateway } from './app.js';
 
 const port = Number(process.env.PORT_GATEWAY ?? 4000);

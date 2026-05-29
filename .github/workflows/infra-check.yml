@@ -1,0 +1,102 @@
+name: Infra Check
+
+# Run when a PR changes the Helm chart, the Compose file, or the gateway service.
+on:
+  pull_request:
+    paths:
+      - 'eu-ai-act-classifier/infra/helm/**'
+      - 'eu-ai-act-classifier/docker-compose.yml'
+      - 'eu-ai-act-classifier/services/api-gateway/**'
+  push:
+    branches: [main]
+    paths:
+      - 'eu-ai-act-classifier/infra/helm/**'
+      - 'eu-ai-act-classifier/docker-compose.yml'
+      - 'eu-ai-act-classifier/services/api-gateway/**'
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 1. Helm lint ──────────────────────────────────────────────────────────
+  helm-lint:
+    name: Helm lint (classifier chart)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.16.x'
+
+      - name: helm lint
+        working-directory: eu-ai-act-classifier
+        run: helm lint infra/helm/classifier --strict
+
+      - name: helm template (dry-run render)
+        working-directory: eu-ai-act-classifier
+        run: |
+          helm template classifier infra/helm/classifier \
+            --set image.tag=ci \
+            --set ingress.host=ci.example.com \
+            > /dev/null
+          echo "Helm template render: OK"
+
+  # ── 2. Docker Compose config validation ───────────────────────────────────
+  compose-validate:
+    name: docker compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate compose file (all profiles)
+        working-directory: eu-ai-act-classifier
+        env:
+          # Provide stub values so compose variable substitution does not fail.
+          PORT_GATEWAY: "4000"
+          CORS_ORIGINS: "http://localhost:3000"
+          RATE_LIMIT_MAX: "300"
+          RATE_LIMIT_WINDOW: "1 minute"
+          CLASSIFICATION_URL: "http://host.docker.internal:4001"
+          WORKFLOW_URL: "http://host.docker.internal:4002"
+          REGULATORY_URL: "http://host.docker.internal:4003"
+          TIMELINE_URL: "http://host.docker.internal:4004"
+          AUDIT_LOG_URL: "http://host.docker.internal:4005"
+          NOTIFICATION_URL: "http://host.docker.internal:4006"
+          TENANT_URL: "http://host.docker.internal:4007"
+          EXPORT_URL: "http://host.docker.internal:4008"
+          JWT_JWKS_URL: "http://auth.example.com/.well-known/jwks.json"
+          AUTH_DEV_MODE: "false"
+        run: |
+          docker compose --profile gateway config --quiet
+          echo "docker compose config: OK"
+
+  # ── 3. Gateway type-check ─────────────────────────────────────────────────
+  gateway-typecheck:
+    name: Gateway TypeScript type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: eu-ai-act-classifier/pnpm-lock.yaml
+
+      - name: Install
+        working-directory: eu-ai-act-classifier
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Type-check
+        working-directory: eu-ai-act-classifier
+        run: pnpm --filter @eu-ai-act/api-gateway run typecheck
+
+      - name: Test
+        working-directory: eu-ai-act-classifier
+        run: pnpm --filter @eu-ai-act/api-gateway run test

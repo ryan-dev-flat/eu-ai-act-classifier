@@ -1,0 +1,621 @@
+openapi: "3.1.0"
+
+info:
+  title: EU AI Act Risk Classifier — Public API
+  version: "1.0.0"
+  description: |
+    Single public entry-point for the EU AI Act Risk Classifier platform.
+    All traffic is routed through the API Gateway (`services/api-gateway`),
+    which enforces JWT authentication (ADR 0001), CORS, and per-tenant
+    rate-limiting before proxying to internal micro-services.
+
+    **Authentication** — every request (except `/healthz` and `/readyz`) must
+    carry a valid Bearer JWT issued by the platform's identity provider:
+    ```
+    Authorization: Bearer <jwt>
+    ```
+
+    **Rate limiting** — 300 requests / minute per tenant. Excess requests
+    receive `429 Too Many Requests` with a `Retry-After` header.
+
+    **Request tracing** — include `x-request-id` to correlate logs. If omitted
+    the gateway generates a UUID for each request.
+
+servers:
+  - url: https://classifier.example.com
+    description: Production
+  - url: http://localhost:4000
+    description: Local (via gateway:up)
+
+tags:
+  - name: ops
+    description: Gateway health probes
+  - name: classifications
+    description: AI-system risk classifications (classification-engine)
+  - name: workflows
+    description: Multi-step approval workflows (workflow)
+  - name: regulations
+    description: Obligations and rule versions (regulatory-intelligence)
+  - name: timeline
+    description: Compliance timelines and readiness assessments (timeline)
+  - name: audit
+    description: Immutable audit event log (audit-log)
+  - name: notifications
+    description: User and webhook notifications (notification)
+  - name: tenants
+    description: Tenant management (tenant-identity)
+  - name: users
+    description: User management (tenant-identity)
+  - name: exports
+    description: Report and data exports (export)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT issued by the platform identity provider.
+
+  parameters:
+    RequestId:
+      name: x-request-id
+      in: header
+      required: false
+      schema: { type: string, format: uuid }
+      description: Client-supplied trace correlation ID. Auto-generated if absent.
+
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+    PageParam:
+      name: page
+      in: query
+      schema: { type: integer, default: 1, minimum: 1 }
+    LimitParam:
+      name: limit
+      in: query
+      schema: { type: integer, default: 25, minimum: 1, maximum: 100 }
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message, requestId]
+      properties:
+        error:   { type: string, example: unauthorized }
+        message: { type: string, example: authentication required }
+        requestId: { type: string, format: uuid }
+
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:  { type: string, enum: [ok] }
+        service: { type: string }
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:  { type: integer }
+        page:   { type: integer }
+        limit:  { type: integer }
+        pages:  { type: integer }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: JWT valid but insufficient permissions.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Per-tenant rate limit exceeded.
+      headers:
+        Retry-After:
+          schema: { type: integer }
+          description: Seconds until the rate-limit window resets.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InternalError:
+      description: Unexpected gateway or upstream error.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ── Operations ─────────────────────────────────────────────────────────────
+  /healthz:
+    get:
+      tags: [ops]
+      summary: Liveness probe
+      security: []
+      parameters: [{ $ref: '#/components/parameters/RequestId' }]
+      responses:
+        "200":
+          description: Gateway is alive.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+
+  /readyz:
+    get:
+      tags: [ops]
+      summary: Readiness probe
+      security: []
+      parameters: [{ $ref: '#/components/parameters/RequestId' }]
+      responses:
+        "200":
+          description: Gateway is ready to serve traffic.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+
+  # ── Classifications ────────────────────────────────────────────────────────
+  /v1/classifications:
+    get:
+      tags: [classifications]
+      summary: List classifications
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+        - name: status
+          in: query
+          schema: { type: string, enum: [draft, in_review, approved, rejected] }
+      responses:
+        "200": { description: Paginated list of classifications. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [classifications]
+      summary: Create a classification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [systemName, riskCategory]
+              properties:
+                systemName:   { type: string }
+                riskCategory: { type: string, enum: [unacceptable, high, limited, minimal] }
+                description:  { type: string }
+      responses:
+        "201": { description: Classification created. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  /v1/classifications/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/ResourceId' }
+      - { $ref: '#/components/parameters/RequestId' }
+    get:
+      tags: [classifications]
+      summary: Get a classification
+      responses:
+        "200": { description: Classification detail. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [classifications]
+      summary: Update a classification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: Updated classification. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [classifications]
+      summary: Delete a classification
+      responses:
+        "204": { description: Deleted. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  # ── Workflows ──────────────────────────────────────────────────────────────
+  /v1/workflows:
+    get:
+      tags: [workflows]
+      summary: List workflows
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+      responses:
+        "200": { description: Paginated list of workflows. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [workflows]
+      summary: Start a workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [classificationId, type]
+              properties:
+                classificationId: { type: string }
+                type: { type: string }
+      responses:
+        "201": { description: Workflow started. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  /v1/workflows/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/ResourceId' }
+      - { $ref: '#/components/parameters/RequestId' }
+    get:
+      tags: [workflows]
+      summary: Get workflow
+      responses:
+        "200": { description: Workflow detail. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [workflows]
+      summary: Advance or update workflow step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: Updated workflow. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  # ── Regulatory ─────────────────────────────────────────────────────────────
+  /v1/obligations:
+    get:
+      tags: [regulations]
+      summary: List regulatory obligations
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+        - name: riskCategory
+          in: query
+          schema: { type: string }
+      responses:
+        "200": { description: List of obligations. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  /v1/rule-versions:
+    get:
+      tags: [regulations]
+      summary: List rule versions
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+      responses:
+        "200": { description: List of rule versions. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  # ── Timeline ───────────────────────────────────────────────────────────────
+  /v1/timelines:
+    get:
+      tags: [timeline]
+      summary: List compliance timelines for a classification
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+        - name: classificationId
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: List of timelines. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  /v1/readiness:
+    get:
+      tags: [timeline]
+      summary: List readiness assessments
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+      responses:
+        "200": { description: List of readiness assessments. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [timeline]
+      summary: Create a readiness assessment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [classificationId]
+              properties:
+                classificationId: { type: string }
+                notes: { type: string }
+      responses:
+        "201": { description: Assessment created. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  # ── Audit ──────────────────────────────────────────────────────────────────
+  /v1/audit-events:
+    get:
+      tags: [audit]
+      summary: List audit events
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+        - name: resourceType
+          in: query
+          schema: { type: string }
+        - name: resourceId
+          in: query
+          schema: { type: string }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        "200": { description: Paginated list of audit events. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [audit]
+      summary: Record an audit event (service-internal use)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, resourceType, resourceId]
+              properties:
+                action:       { type: string }
+                resourceType: { type: string }
+                resourceId:   { type: string }
+                meta:         { type: object }
+      responses:
+        "201": { description: Audit event recorded. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  # ── Notifications ──────────────────────────────────────────────────────────
+  /v1/notifications:
+    get:
+      tags: [notifications]
+      summary: List notifications for the current user
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+        - name: unreadOnly
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        "200": { description: List of notifications. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [notifications]
+      summary: Send a notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipientId, subject, body]
+              properties:
+                recipientId: { type: string }
+                subject:     { type: string }
+                body:        { type: string }
+                channel:     { type: string, enum: [email, in_app], default: in_app }
+      responses:
+        "201": { description: Notification sent. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  /v1/notifications/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/ResourceId' }
+      - { $ref: '#/components/parameters/RequestId' }
+    patch:
+      tags: [notifications]
+      summary: Mark notification read/unread
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                read: { type: boolean }
+      responses:
+        "200": { description: Updated notification. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  # ── Tenants ────────────────────────────────────────────────────────────────
+  /v1/tenants:
+    get:
+      tags: [tenants]
+      summary: List tenants (admin only)
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+      responses:
+        "200": { description: List of tenants. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [tenants]
+      summary: Create a tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                plan: { type: string, enum: [starter, pro, enterprise] }
+      responses:
+        "201": { description: Tenant created. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "403": { $ref: '#/components/responses/Forbidden' }
+
+  /v1/tenants/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/ResourceId' }
+      - { $ref: '#/components/parameters/RequestId' }
+    get:
+      tags: [tenants]
+      summary: Get tenant
+      responses:
+        "200": { description: Tenant detail. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [tenants]
+      summary: Update tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: Updated tenant. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  # ── Users ──────────────────────────────────────────────────────────────────
+  /v1/users:
+    get:
+      tags: [users]
+      summary: List users in the current tenant
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+      responses:
+        "200": { description: List of users. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [users]
+      summary: Invite / create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, role]
+              properties:
+                email: { type: string, format: email }
+                role:  { type: string, enum: [owner, admin, reviewer, viewer] }
+      responses:
+        "201": { description: User created. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+
+  /v1/users/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/ResourceId' }
+      - { $ref: '#/components/parameters/RequestId' }
+    get:
+      tags: [users]
+      summary: Get user
+      responses:
+        "200": { description: User detail. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [users]
+      summary: Update user role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string }
+      responses:
+        "200": { description: Updated user. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [users]
+      summary: Remove user from tenant
+      responses:
+        "204": { description: User removed. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  # ── Exports ────────────────────────────────────────────────────────────────
+  /v1/exports:
+    get:
+      tags: [exports]
+      summary: List export jobs
+      parameters:
+        - { $ref: '#/components/parameters/RequestId' }
+        - { $ref: '#/components/parameters/PageParam' }
+        - { $ref: '#/components/parameters/LimitParam' }
+      responses:
+        "200": { description: List of export jobs. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
+    post:
+      tags: [exports]
+      summary: Create an export job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [classificationId, format]
+              properties:
+                classificationId: { type: string }
+                format: { type: string, enum: [pdf, docx, csv] }
+                includeAuditLog: { type: boolean, default: false }
+      responses:
+        "202": { description: Export job accepted; poll the returned job URL for completion. }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "429": { $ref: '#/components/responses/TooManyRequests' }
