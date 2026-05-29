@@ -1,0 +1,31 @@
+{
+  "name": "@eu-ai-act/api-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo 'lint: api-gateway'",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@eu-ai-act/auth": "workspace:*",
+    "@eu-ai-act/config": "workspace:*",
+    "@eu-ai-act/shared-types": "workspace:*",
+    "@fastify/cors": "^10.0.1",
+    "@fastify/http-proxy": "^10.0.1",
+    "@fastify/rate-limit": "^10.1.1",
+    "fastify": "^5.0.0",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.2"
+  }
+}

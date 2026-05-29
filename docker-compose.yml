@@ -69,6 +69,46 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    image: eu-ai-act/api-gateway:dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT_GATEWAY: "4000"
+      JWT_ISSUER: ${JWT_ISSUER:-https://auth.local.eu-ai-act.dev}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-eu-ai-act-classifier}
+      JWT_JWKS_URL: ${JWT_JWKS_URL:-http://host.docker.internal:4444/.well-known/jwks.json}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-1 minute}
+      CLASSIFICATION_URL: http://host.docker.internal:4001
+      WORKFLOW_URL: http://host.docker.internal:4002
+      REGULATORY_URL: http://host.docker.internal:4003
+      TIMELINE_URL: http://host.docker.internal:4004
+      AUDIT_LOG_URL: http://host.docker.internal:4005
+      NOTIFICATION_URL: http://host.docker.internal:4006
+      TENANT_URL: http://host.docker.internal:4007
+      EXPORT_URL: http://host.docker.internal:4008
+    ports:
+      - "4000:4000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "require('http').get('http://localhost:4000/healthz',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    profiles:
+      - gateway
+
 volumes:
   postgres-data:
   minio-data:

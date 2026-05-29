@@ -31,6 +31,10 @@ spec:
             - name: {{ $k }}
               value: {{ $v | quote }}
             {{- end }}
+            {{- range $k, $v := $svc.extraEnv }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
           readinessProbe:
             httpGet: { path: /healthz, port: {{ $svc.port }} }
             initialDelaySeconds: 5

@@ -9,6 +9,24 @@ ingress:
   host: classifier.example.com
 
 services:
+  api-gateway:
+    replicas: 2
+    port: 4000
+    resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+    # Gateway-specific config; upstream URLs use in-cluster service DNS.
+    extraEnv:
+      PORT_GATEWAY: "4000"
+      CORS_ORIGINS: "https://classifier.example.com,https://*.atlassian.net"
+      RATE_LIMIT_MAX: "300"
+      RATE_LIMIT_WINDOW: "1 minute"
+      CLASSIFICATION_URL: "http://classification-engine"
+      WORKFLOW_URL: "http://workflow"
+      REGULATORY_URL: "http://regulatory-intelligence"
+      TIMELINE_URL: "http://timeline"
+      AUDIT_LOG_URL: "http://audit-log"
+      NOTIFICATION_URL: "http://notification"
+      TENANT_URL: "http://tenant-identity"
+      EXPORT_URL: "http://export"
   classification-engine:
     replicas: 2
     port: 4001

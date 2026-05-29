@@ -17,7 +17,10 @@
     "db:migrate": "pnpm --filter @eu-ai-act/db run migrate",
     "db:seed": "pnpm --filter @eu-ai-act/db run seed",
     "infra:up": "docker compose up -d",
-    "infra:down": "docker compose down -v"
+    "infra:down": "docker compose down -v",
+    "gateway:up": "docker compose --profile gateway up -d --build api-gateway",
+    "gateway:down": "docker compose --profile gateway rm -sf api-gateway",
+    "gateway:logs": "docker compose --profile gateway logs -f api-gateway"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",

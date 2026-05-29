@@ -11,27 +11,10 @@ spec:
     - host: {{ .Values.ingress.host }}
       http:
         paths:
-          - path: /api/classifications
+          # All API traffic flows through the gateway per ADR 0001.
+          - path: /api
             pathType: Prefix
-            backend: { service: { name: classification-engine, port: { number: 80 } } }
-          - path: /api/workflows
-            pathType: Prefix
-            backend: { service: { name: workflow, port: { number: 80 } } }
-          - path: /api/regulations
-            pathType: Prefix
-            backend: { service: { name: regulatory-intelligence, port: { number: 80 } } }
-          - path: /api/timeline
-            pathType: Prefix
-            backend: { service: { name: timeline, port: { number: 80 } } }
-          - path: /api/audit
-            pathType: Prefix
-            backend: { service: { name: audit-log, port: { number: 80 } } }
-          - path: /api/tenant
-            pathType: Prefix
-            backend: { service: { name: tenant-identity, port: { number: 80 } } }
-          - path: /api/exports
-            pathType: Prefix
-            backend: { service: { name: export, port: { number: 80 } } }
+            backend: { service: { name: api-gateway, port: { number: 80 } } }
           - path: /
             pathType: Prefix
             backend: { service: { name: web, port: { number: 80 } } }

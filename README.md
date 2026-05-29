@@ -12,6 +12,7 @@ eu-ai-act-classifier/
 │   ├── web/                     # Next.js 14 App Router frontend
 │   └── jira-plugin/             # Atlassian Forge plugin
 ├── services/
+│   ├── api-gateway/             # public edge — see docs/adr/0001
 │   ├── classification-engine/   # §3.1 — rule evaluation
 │   ├── workflow/                # §3.2 — approval chains
 │   ├── regulatory-intelligence/ # §3.3 — obligation catalog, change log
@@ -50,6 +51,22 @@ pnpm dev            # runs all services + web in parallel
 ```
 
 Service ports (local) are listed in `.env.example`.
+
+### API Gateway (optional)
+
+The API Gateway (`services/api-gateway`, see [ADR 0001](docs/adr/0001-api-gateway-auth-model.md))
+runs as an opt-in Compose profile so `pnpm infra:up` stays lightweight. After
+`pnpm dev` has the upstream services listening on `localhost:4001-4008`:
+
+```bash
+pnpm gateway:up     # build + start api-gateway on :4000
+pnpm gateway:logs   # follow logs
+pnpm gateway:down   # stop and remove the container
+```
+
+The container reaches host-bound services via `host.docker.internal`; all
+public traffic should be sent to `http://localhost:4000` (it forwards the
+verified JWT unchanged to the upstreams).
 
 ## MVP scope (Phase 1)
 
